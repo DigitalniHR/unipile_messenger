@@ -40,19 +40,9 @@ python scripts/search_linkedin.py "Product Manager Prague" --limit 20
 
 ### Messaging (REQUIRES APPROVAL)
 
-**Send Message to User (Recommended):**
+**Send Message:**
 ```bash
 python scripts/send_to_user.py --user-id USER_ID --message "Your message"
-```
-
-**Send Message to Existing Chat:**
-```bash
-python scripts/send_message.py --chat-id CHAT_ID --message "Your message"
-```
-
-**Send Reply (with suggestion):**
-```bash
-python scripts/send_reply.py --chat-id CHAT_ID
 ```
 
 ### Interactive Mode
@@ -76,8 +66,6 @@ unipile-messenger/
 │   ├── recent_messages.py   # CLI: show recent messages
 │   ├── search_linkedin.py   # CLI: search people on LinkedIn
 │   ├── send_to_user.py      # CLI: send message to user (creates chat)
-│   ├── send_message.py      # CLI: send message to existing chat
-│   ├── send_reply.py        # CLI: send reply with suggestion
 │   ├── logger.py            # Utility: logging
 │   └── formatters.py        # Utility: data filtering
 ├── .env                     # API credentials

@@ -92,7 +92,7 @@ python scripts/search_linkedin.py "John Doe" --api sales_navigator
 
 ## 💬 Messaging (Write Operations - Requires Approval ⚠️)
 
-### `send_to_user.py` 🌟 **Recommended**
+### `send_to_user.py`
 Send a message directly to a LinkedIn user (creates chat if needed).
 
 ```bash
@@ -107,42 +107,6 @@ python scripts/send_to_user.py -u USER_ID -m "Hi" --yes  # skip confirmation
 - `--yes, -y`: Skip confirmation prompt
 
 **⚠️ IMPORTANT:** Always review message before sending!
-
-**Why recommended:** You don't need to find existing chat - it creates or reuses automatically.
-
----
-
-### `send_message.py`
-Send a message to an existing chat.
-
-```bash
-python scripts/send_message.py --chat-id CHAT_ID --message "Hello!"
-python scripts/send_message.py -c CHAT_ID -m "Hi" --yes  # skip confirmation
-```
-
-**Options:**
-- `--chat-id, -c` (required): Chat ID
-- `--message, -m` (required): Message text
-- `--yes, -y`: Skip confirmation prompt
-
-**⚠️ IMPORTANT:** Always review message before sending!
-
----
-
-### `send_reply.py`
-Send a reply with optional AI suggestion.
-
-```bash
-python scripts/send_reply.py --chat-id CHAT_ID
-python scripts/send_reply.py --chat-id CHAT_ID --message "Custom message"
-```
-
-**Options:**
-- `--chat-id, -c` (required): Chat ID
-- `--message, -m`: Custom message (shows suggestion if not provided)
-- `--yes, -y`: Skip confirmation prompt
-
-**⚠️ IMPORTANT:** Always review suggested message before approving!
 
 ---
 
@@ -192,11 +156,11 @@ python scripts/send_to_user.py --user-id ACoAABRD1jk... --message "Hi John!"
 # Step 1: See recent messages
 python scripts/recent_messages.py --days 3
 
-# Step 2: View full thread
+# Step 2: View full thread and get user details
 python scripts/view_thread.py --chat-id CHAT_ID --show-profile
 
-# Step 3: Send reply
-python scripts/send_reply.py --chat-id CHAT_ID
+# Step 3: Send reply (use user_id from step 2)
+python scripts/send_to_user.py --user-id USER_ID --message "Your reply"
 ```
 
 ### 3. Review all conversations

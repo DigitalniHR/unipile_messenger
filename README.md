@@ -100,22 +100,10 @@ python scripts/search_linkedin.py "John Doe" --api sales_navigator
 
 #### 💬 Messaging (Requires Approval)
 
-**Send message to user (recommended):**
+**Send message:**
 ```bash
 python scripts/send_to_user.py --user-id USER_ID --message "Hello!"
 python scripts/send_to_user.py -u USER_ID -m "Hi" --yes  # skip confirmation
-```
-
-**Send message to existing chat:**
-```bash
-python scripts/send_message.py --chat-id CHAT_ID --message "Hello!"
-python scripts/send_message.py --chat-id CHAT_ID --message "Hi" --yes  # skip confirmation
-```
-
-**Send reply with suggestion:**
-```bash
-python scripts/send_reply.py --chat-id CHAT_ID  # shows suggested reply first
-python scripts/send_reply.py --chat-id CHAT_ID --message "Custom message"
 ```
 
 ## Architecture
@@ -134,8 +122,6 @@ scripts/
 ├── recent_messages.py   # CLI: show messages from last N days
 ├── search_linkedin.py   # CLI: search people on LinkedIn
 ├── send_to_user.py      # CLI: send message to user (creates chat if needed)
-├── send_message.py      # CLI: send message to existing chat
-├── send_reply.py        # CLI: send reply with suggestion
 ├── logger.py            # Utility: logging
 └── formatters.py        # Utility: data filtering
 ```
@@ -146,8 +132,7 @@ scripts/
 - `list_accounts()` - Get connected accounts
 - `list_chats(account_id)` - Get conversations
 - `list_messages(chat_id)` - Get messages in chat
-- `send_to_user(account_id, user_id, text)` - Send message to user (creates chat if needed) **[Recommended]**
-- `send_message(chat_id, text)` - Send message to existing chat
+- `send_to_user(account_id, user_id, text)` - Send message to user (creates chat if needed)
 - `get_user_profile(user_id, account_id)` - Get LinkedIn profile
 - `search_linkedin(account_id, keywords)` - Search people on LinkedIn
 - `list_relations(account_id)` - Get LinkedIn connections
