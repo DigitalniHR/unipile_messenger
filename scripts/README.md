@@ -92,6 +92,26 @@ python scripts/search_linkedin.py "John Doe" --api sales_navigator
 
 ## 💬 Messaging (Write Operations - Requires Approval ⚠️)
 
+### `send_to_user.py` 🌟 **Recommended**
+Send a message directly to a LinkedIn user (creates chat if needed).
+
+```bash
+python scripts/send_to_user.py --user-id USER_ID --message "Hello!"
+python scripts/send_to_user.py -u USER_ID -m "Hi" --yes  # skip confirmation
+```
+
+**Options:**
+- `--user-id, -u` (required): Recipient's provider user ID (from search)
+- `--message, -m` (required): Message text
+- `--account-id, -a`: Account ID (uses first account if not provided)
+- `--yes, -y`: Skip confirmation prompt
+
+**⚠️ IMPORTANT:** Always review message before sending!
+
+**Why recommended:** You don't need to find existing chat - it creates or reuses automatically.
+
+---
+
 ### `send_message.py`
 Send a message to an existing chat.
 
@@ -163,11 +183,8 @@ python scripts/search_linkedin.py "John Doe"
 # Step 2: Copy User ID from results
 # User ID: ACoAABRD1jk...
 
-# Step 3: Start chat (use API or interactive mode)
-# ...
-
-# Step 4: Send message
-python scripts/send_message.py --chat-id CHAT_ID --message "Hi John!"
+# Step 3: Send message (creates chat automatically)
+python scripts/send_to_user.py --user-id ACoAABRD1jk... --message "Hi John!"
 ```
 
 ### 2. Check and respond to recent messages

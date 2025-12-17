@@ -264,6 +264,36 @@ class UniPileClient:
             provider="LINKEDIN",
         )
 
+    def send_to_user(self, account_id: str, user_id: str, text: str) -> tuple[str, str]:
+        """
+        Send a message to a user (creates chat if doesn't exist).
+
+        This is the recommended way to send messages to LinkedIn connections.
+        It creates a new chat or uses existing one automatically.
+
+        Args:
+            account_id: Your UniPile account ID
+            user_id: Recipient's provider ID (from search or profile)
+            text: Message text
+
+        Returns:
+            Tuple of (chat_id, message_id)
+        """
+        data = self._request(
+            "POST",
+            "/chats",
+            json={
+                "account_id": account_id,
+                "attendees_ids": [user_id],
+                "text": text,
+            },
+        )
+
+        chat_id = data.get("chat_id", data.get("id", ""))
+        message_id = data.get("message_id", "")
+
+        return chat_id, message_id
+
     # ==================== MESSAGES ====================
 
     def list_messages(
