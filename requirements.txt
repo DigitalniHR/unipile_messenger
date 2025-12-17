@@ -1,0 +1,12 @@
+# HTTP & API
+requests==2.31.0
+
+# Configuration
+python-dotenv==1.2.1
+
+# Data validation
+pydantic==2.10.4
+
+# Terminal UI
+rich==13.9.4
+questionary==2.0.1
