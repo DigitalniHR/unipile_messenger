@@ -48,28 +48,27 @@ python scripts/send_to_user.py --user-id USER_ID --message "Your message"
 # Preview mode (safe, no sending)
 python scripts/respond_to_comments.py --posts 3 --dry-run
 
-# Interactive mode (approve each response)
+# Interactive mode (EVERY response requires your approval)
 python scripts/respond_to_comments.py --posts 3
 
 # Process more posts
 python scripts/respond_to_comments.py --posts 10
-
-# Batch mode (auto-approve all - use with caution!)
-python scripts/respond_to_comments.py --posts 3 --yes
 ```
 
 **✅ Setup Complete** - Anthropic API key and model already configured in `.env`
 
-**Quick Start:**
+**Approval-First Workflow** (All responses require explicit approval):
 1. Always run with `--dry-run` first to preview responses:
    ```bash
    python scripts/respond_to_comments.py --posts 3 --dry-run
    ```
 2. Review AI-generated responses on screen
-3. Then run interactive mode to approve and send:
+3. Then run interactive mode - **you will be asked to approve EACH response**:
    ```bash
    python scripts/respond_to_comments.py --posts 3
    ```
+4. For each response, type `yes`, `send`, or `ok` to send it
+5. Type anything else (e.g. `skip`, `no`, or just Enter) to skip
 
 **Workflow:**
 1. Fetches your N most recent LinkedIn posts
@@ -94,8 +93,7 @@ The AI now understands each commenter's communication style, previous points, an
 **Options:**
 - `--posts N` - Number of recent posts to process (default: 3)
 - `--dry-run` - Preview responses without sending (SAFE MODE)
-- `--yes` - Skip approval prompts (auto-approve all)
-- `--account-id ID` - Override .env account ID
+- `--account-id ID` - Override .env account ID (default: from .env)
 
 ## Project Structure
 
@@ -186,13 +184,13 @@ unipile-messenger/
 1. NEVER run `respond_to_comments.py` without `--dry-run` first
 2. Run with `--dry-run` flag first: `python scripts/respond_to_comments.py --posts 3 --dry-run`
 3. Review the AI-generated responses on screen
-4. For production, run WITHOUT `--dry-run` for interactive approval mode (normal)
-5. Only use `--yes` flag if you trust the AI responses completely
-6. Each response will require "yes"/"send" confirmation before posting
+4. For production, run without `--dry-run` for interactive approval mode
+5. **EVERY response MUST be approved** - type "yes"/"send" or "ok" before it's sent
+6. Type anything else to skip a response (no auto-sending ever)
 
 **Example workflow:**
-❌ WRONG: Run with `--yes` immediately
-✅ CORRECT: Run with `--dry-run` → review → run without flags → approve each
+❌ WRONG: Automatic responses without approval
+✅ CORRECT: Run with `--dry-run` → review → run normally → approve EACH response
 
 **Other operations requiring approval:**
 - Starting new conversations

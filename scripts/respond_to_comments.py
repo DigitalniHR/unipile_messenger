@@ -33,9 +33,6 @@ EXAMPLE USAGE:
     # Interactive mode (approve each response)
     python scripts/respond_to_comments.py --posts 3
 
-    # Batch mode (auto-approve all - use with caution!)
-    python scripts/respond_to_comments.py --posts 3 --yes
-
     # Process more posts
     python scripts/respond_to_comments.py --posts 10
 
@@ -333,7 +330,7 @@ def main():
 Examples:
   python scripts/respond_to_comments.py --posts 3
   python scripts/respond_to_comments.py --posts 5 --dry-run
-  python scripts/respond_to_comments.py --posts 3 --yes  # Skip approval prompts
+  python scripts/respond_to_comments.py --posts 10
         """
     )
     parser.add_argument(
@@ -351,11 +348,6 @@ Examples:
         "--dry-run", "-d",
         action="store_true",
         help="Preview responses without sending",
-    )
-    parser.add_argument(
-        "--yes", "-y",
-        action="store_true",
-        help="Skip approval prompts (DANGEROUS: sends all responses automatically)",
     )
 
     args = parser.parse_args()
@@ -378,12 +370,6 @@ Examples:
             console.print(f"[red]Error:[/red] {e}")
             return
 
-        # Warning for --yes flag
-        if args.yes:
-            console.print(
-                "[yellow]⚠️  WARNING: Auto-approval enabled. "
-                "All responses will be sent without confirmation![/yellow]\n"
-            )
 
         # Step 1: Fetch recent posts
         console.print(f"[cyan]Fetching {args.posts} most recent posts...[/cyan]")
@@ -534,14 +520,13 @@ Examples:
                 console.print("[dim]Dry run: not sending[/dim]")
                 continue
 
-            # Get approval
-            if not args.yes:
-                console.print("\n[yellow]Send this response?[/yellow]")
-                approval = input("Type 'yes' or 'send' to confirm (or 'skip'): ").strip().lower()
-                if approval not in ["yes", "send", "ok"]:
-                    console.print("[dim]Skipped[/dim]")
-                    skipped_count += 1
-                    continue
+            # Get approval (mandatory - never skip)
+            console.print("\n[yellow]Send this response?[/yellow]")
+            approval = input("Type 'yes' or 'send' to confirm (or 'skip'): ").strip().lower()
+            if approval not in ["yes", "send", "ok"]:
+                console.print("[dim]Skipped[/dim]")
+                skipped_count += 1
+                continue
 
             # Send comment
             try:
