@@ -12,16 +12,19 @@ COMPLETE WORKFLOW:
 5. For each unanswered top-level comment:
    - Show comment in rich panel
    - Generate professional response using Claude AI
-   - Preview response in panel
-   - Wait for approval (unless --dry-run or --yes)
+   - Open multi-line editor pre-filled with AI response
+   - Allow editing (Ctrl+D to finish, Ctrl+C to skip)
+   - Preview final response in panel
+   - Wait for approval
    - Send comment reply to LinkedIn
    - Rate-limit: 1s sleep between sends
 6. Display summary (sent/skipped counts)
 
 KEY FEATURES:
+- Inline editor: Edit AI responses before sending (Ctrl+D to finish, Ctrl+C to skip)
 - Mandatory approval workflow: Every response requires "yes" before sending
+- Conversation context: Uses full comment thread for better AI relevance
 - Dry-run mode: Preview all responses without sending anything
-- Batch mode: Auto-approve all (--yes flag, use with caution!)
 - Comment threading: Only responds to top-level comments
 - Rate limiting: 1 second sleep between API sends
 - Error handling: Skips failed comments, continues with next
@@ -86,6 +89,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
+import questionary
 
 from src.unipile_client import UniPileClient, UniPileError
 from src.config import Config
@@ -515,17 +519,73 @@ Examples:
                 border_style="green",
             ))
 
-            # Dry run mode
-            if args.dry_run:
-                console.print("[dim]Dry run: not sending[/dim]")
+            # Allow editing the response before sending
+            console.print("\n[cyan]Edit response (press Ctrl+D when done, or Ctrl+C to skip):[/cyan]")
+            try:
+                # Try interactive questionary editor
+                try:
+                    edited_response = questionary.text(
+                        "",
+                        default=response_text,
+                        multiline=True,
+                    ).ask()
+                except Exception:
+                    # Fallback for non-interactive environments
+                    # (OSError, KeyError, ValueError, EOFError, etc.)
+                    console.print("[yellow]Note: Interactive editor unavailable[/yellow]")
+                    try:
+                        console.print("Current response:")
+                        console.print(Panel(response_text, border_style="dim"))
+                        console.print("Press Enter to keep, or type new response (empty to skip):")
+                        edited_response = input("> ").strip() or response_text
+                    except EOFError:
+                        # No input available, use original response
+                        edited_response = response_text
+
+                # User pressed Ctrl+C or closed editor
+                if edited_response is None:
+                    console.print("[dim]Skipped[/dim]")
+                    skipped_count += 1
+                    continue
+
+                # Trim whitespace
+                edited_response = edited_response.strip()
+
+                # Show the final edited version if it changed
+                if edited_response != response_text:
+                    console.print("\n[green bold]Edited Response:[/green bold]")
+                    console.print(Panel(
+                        edited_response,
+                        border_style="green",
+                        box=box.ROUNDED,
+                    ))
+
+                # Get final approval
+                console.print("\n[yellow]Send this response?[/yellow]")
+                try:
+                    approval = input("Type 'yes' or 'send' to confirm (or 'skip'): ").strip().lower()
+                except EOFError:
+                    # No input available, assume skip
+                    console.print("[dim]Skipped[/dim]")
+                    skipped_count += 1
+                    continue
+
+                if approval not in ["yes", "send", "ok"]:
+                    console.print("[dim]Skipped[/dim]")
+                    skipped_count += 1
+                    continue
+
+                # Use edited response for sending
+                response_text = edited_response
+
+            except KeyboardInterrupt:
+                console.print("\n[dim]Skipped[/dim]")
+                skipped_count += 1
                 continue
 
-            # Get approval (mandatory - never skip)
-            console.print("\n[yellow]Send this response?[/yellow]")
-            approval = input("Type 'yes' or 'send' to confirm (or 'skip'): ").strip().lower()
-            if approval not in ["yes", "send", "ok"]:
-                console.print("[dim]Skipped[/dim]")
-                skipped_count += 1
+            # Dry run mode (after editing/approval, don't actually send)
+            if args.dry_run:
+                console.print("[dim]Dry run: not sending[/dim]")
                 continue
 
             # Send comment
