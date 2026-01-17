@@ -12,15 +12,11 @@ source venv/bin/activate
 
 ### View & Search
 
-**List Accounts:**
-```bash
-python scripts/list_accounts.py
-```
-
 **List Conversations:**
 ```bash
-python scripts/list_chats.py --account-id ACCOUNT_ID --limit 20
+python scripts/list_chats.py --limit 20
 ```
+*Account ID loaded automatically from .env*
 
 **View Thread:**
 ```bash
@@ -45,39 +41,89 @@ python scripts/search_linkedin.py "Product Manager Prague" --limit 20
 python scripts/send_to_user.py --user-id USER_ID --message "Your message"
 ```
 
-### Interactive Mode
+### Comment Engagement (AI-Powered)
+
+**Respond to Unanswered Post Comments:**
 ```bash
-python src/main.py
+# Preview mode (safe, no sending)
+python scripts/respond_to_comments.py --posts 3 --dry-run
+
+# Interactive mode (approve each response)
+python scripts/respond_to_comments.py --posts 3
+
+# Process more posts
+python scripts/respond_to_comments.py --posts 10
+
+# Batch mode (auto-approve all - use with caution!)
+python scripts/respond_to_comments.py --posts 3 --yes
 ```
+
+**✅ Setup Complete** - Anthropic API key and model already configured in `.env`
+
+**Quick Start:**
+1. Always run with `--dry-run` first to preview responses:
+   ```bash
+   python scripts/respond_to_comments.py --posts 3 --dry-run
+   ```
+2. Review AI-generated responses on screen
+3. Then run interactive mode to approve and send:
+   ```bash
+   python scripts/respond_to_comments.py --posts 3
+   ```
+
+**Workflow:**
+1. Fetches your N most recent LinkedIn posts
+2. Downloads all comments (with pagination)
+3. Filters out:
+   - Your own comments
+   - Comments you already replied to
+4. For each unanswered top-level comment:
+   - **Builds conversation thread**: Collects all previous comments from this specific person (for context)
+   - Shows comment preview
+   - Generates personalized AI response using Claude with:
+     - The original post content
+     - The comment being responded to
+     - **Full conversation history with this commenter** ← *New Feature*
+   - Presents response for approval
+   - Sends if approved (with rate limiting)
+5. Displays summary (sent/skipped counts)
+
+**Why Conversation Context Matters:**
+The AI now understands each commenter's communication style, previous points, and interests from the same post. This makes responses more **relevant, personalized, and natural** rather than generic.
+
+**Options:**
+- `--posts N` - Number of recent posts to process (default: 3)
+- `--dry-run` - Preview responses without sending (SAFE MODE)
+- `--yes` - Skip approval prompts (auto-approve all)
+- `--account-id ID` - Override .env account ID
 
 ## Project Structure
 
 ```
 unipile-messenger/
 ├── src/
-│   ├── main.py              # Interactive Rich UI
-│   ├── unipile_client.py    # Core API client
-│   ├── config.py            # Environment config
-│   └── models.py            # Pydantic models
+│   ├── unipile_client.py      # Core API client (messaging + posts + comments)
+│   ├── config.py              # Environment config (.env loader)
+│   ├── models.py              # Pydantic models (Account, Chat, Post, Comment, etc.)
+│   └── ai_responder.py        # Claude AI response generator (for comment engagement)
 ├── scripts/
-│   ├── list_accounts.py     # CLI: list accounts
-│   ├── list_chats.py        # CLI: list conversations
-│   ├── view_thread.py       # CLI: view full conversation
-│   ├── recent_messages.py   # CLI: show recent messages
-│   ├── search_linkedin.py   # CLI: search people on LinkedIn
-│   ├── send_to_user.py      # CLI: send message to user (creates chat)
-│   ├── logger.py            # Utility: logging
-│   └── formatters.py        # Utility: data filtering
-├── .env                     # API credentials
-└── prompts/                 # Future: AI prompts
+│   ├── list_chats.py          # CLI: list conversations
+│   ├── view_thread.py         # CLI: view full conversation
+│   ├── recent_messages.py     # CLI: show recent messages
+│   ├── search_linkedin.py     # CLI: search people on LinkedIn
+│   ├── send_to_user.py        # CLI: send message to user (creates chat)
+│   └── respond_to_comments.py # CLI: AI-powered comment responses (NEW)
+├── prompts/
+│   └── comment_response.md    # System prompt for Claude (engagement guidelines)
+├── .env                       # API credentials + account IDs
+└── requirements.txt           # Python dependencies (includes anthropic)
 ```
 
 ## Workflow
 
 1. Always activate venv first: `source venv/bin/activate`
-2. Check credentials: `python scripts/list_accounts.py`
-3. Use interactive mode for exploration: `python src/main.py`
-4. Use CLI scripts for quick operations
+2. Claude Code orchestrates and calls scripts as needed
+3. Account ID is loaded automatically from .env (UNIPILE_ACCOUNT_ID)
 
 ## Message Sending Workflow (MANDATORY)
 
@@ -99,19 +145,29 @@ unipile-messenger/
 
 ## API Endpoints Used
 
+**Messaging:**
 - `GET /accounts` - List connected accounts
 - `GET /chats` - List conversations
 - `GET /chats/{id}/messages` - Get messages
 - `POST /chats/{id}/messages` - Send message
 - `POST /chats` - Start new conversation
 
+**Posts & Comments:**
+- `GET /users/{id}/posts` - List user's posts
+- `GET /posts/{id}/comments` - List post comments
+- `POST /posts/{id}/comments` - Send comment/reply
+
 ## Pre-approved Actions (NO USER APPROVAL NEEDED)
 
-- List accounts, chats, messages (read-only operations)
+**Read-only operations** (safe, no API writes):
+- List accounts, chats, messages
+- List posts and comments
+- Search LinkedIn people
+- View conversation threads
+- Show message/response drafts/suggestions
 - Run scripts with `--help` flag
 - Test API connectivity
-- View conversation threads
-- Show message drafts/suggestions
+- Dry-run mode (`--dry-run` flag)
 
 ## ⛔ CRITICAL: NEVER DO WITHOUT EXPLICIT USER APPROVAL
 
@@ -125,6 +181,18 @@ unipile-messenger/
 **Example workflow:**
 ❌ WRONG: Show draft → immediately send with --yes flag
 ✅ CORRECT: Show draft → wait for "yes send it" → then send
+
+**Sending Comment Responses:**
+1. NEVER run `respond_to_comments.py` without `--dry-run` first
+2. Run with `--dry-run` flag first: `python scripts/respond_to_comments.py --posts 3 --dry-run`
+3. Review the AI-generated responses on screen
+4. For production, run WITHOUT `--dry-run` for interactive approval mode (normal)
+5. Only use `--yes` flag if you trust the AI responses completely
+6. Each response will require "yes"/"send" confirmation before posting
+
+**Example workflow:**
+❌ WRONG: Run with `--yes` immediately
+✅ CORRECT: Run with `--dry-run` → review → run without flags → approve each
 
 **Other operations requiring approval:**
 - Starting new conversations

@@ -17,6 +17,11 @@ class Config:
     # UniPile API
     UNIPILE_DSN = os.getenv("UNIPILE_DSN")
     UNIPILE_ACCESS_TOKEN = os.getenv("UNIPILE_ACCESS_TOKEN")
+    UNIPILE_ACCOUNT_ID = os.getenv("UNIPILE_ACCOUNT_ID")
+
+    # AI Response Generation
+    ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+    ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -34,6 +39,8 @@ class Config:
             errors.append("UNIPILE_DSN not set in .env")
         if not cls.UNIPILE_ACCESS_TOKEN:
             errors.append("UNIPILE_ACCESS_TOKEN not set in .env")
+        if not cls.UNIPILE_ACCOUNT_ID:
+            errors.append("UNIPILE_ACCOUNT_ID not set in .env")
 
         if errors:
             raise ValueError("Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors))

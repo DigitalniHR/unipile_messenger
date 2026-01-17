@@ -1,15 +1,14 @@
 # UniPile Messenger
 
-LinkedIn messaging via UniPile API with Rich terminal UI.
+LinkedIn messaging via UniPile API, orchestrated by Claude Code.
 
 ## Features
 
-- List connected LinkedIn accounts
 - View conversations
 - View messages in a conversation
 - Send messages **with human approval workflow**
-- Interactive Rich terminal interface
-- CLI scripts for quick operations
+- CLI scripts for operations
+- Claude Code orchestration
 
 ## Important: Human-in-the-Loop
 
@@ -44,10 +43,13 @@ Create `.env` file (or copy from `.env.example`):
 ```bash
 UNIPILE_DSN=api20.unipile.com:15036
 UNIPILE_ACCESS_TOKEN=your_token_here
+UNIPILE_ACCOUNT_ID=your_account_id_here
 LOG_LEVEL=INFO
 ```
 
 ## Usage
+
+**Orchestrated by Claude Code** - Claude Code calls these scripts as needed.
 
 **Always activate venv first:**
 ```bash
@@ -55,29 +57,17 @@ cd "/Users/matejmatolin/Claude projects/unipile-messenger"
 source venv/bin/activate
 ```
 
-### Interactive Mode
-
-```bash
-python src/main.py
-```
-
-Navigate with arrow keys, Enter to select.
-
 ### CLI Scripts
 
 📖 **Full scripts documentation:** [scripts/README.md](scripts/README.md)
 
 #### 📋 View & Search
 
-**List connected accounts:**
-```bash
-python scripts/list_accounts.py
-```
-
 **List conversations:**
 ```bash
-python scripts/list_chats.py --account-id ACCOUNT_ID --limit 20
+python scripts/list_chats.py [--limit 20]
 ```
+*Account ID loaded automatically from .env*
 
 **View full conversation thread:**
 ```bash
@@ -88,8 +78,8 @@ python scripts/view_thread.py --chat-id CHAT_ID --show-profile  # with contact d
 **Show recent messages:**
 ```bash
 python scripts/recent_messages.py --days 3
-python scripts/recent_messages.py --days 7 --account-id ACCOUNT_ID
 ```
+*Account ID loaded automatically from .env*
 
 **Search people on LinkedIn:**
 ```bash
@@ -110,20 +100,16 @@ python scripts/send_to_user.py -u USER_ID -m "Hi" --yes  # skip confirmation
 
 ```
 src/
-├── main.py           # Interactive Rich UI
 ├── unipile_client.py # API client wrapper (accounts, chats, messages, search)
-├── config.py         # Environment config
+├── config.py         # Environment config (.env loader)
 └── models.py         # Pydantic data models
 
 scripts/
-├── list_accounts.py     # CLI: list accounts
 ├── list_chats.py        # CLI: list conversations
 ├── view_thread.py       # CLI: view full conversation with contact details
 ├── recent_messages.py   # CLI: show messages from last N days
 ├── search_linkedin.py   # CLI: search people on LinkedIn
-├── send_to_user.py      # CLI: send message to user (creates chat if needed)
-├── logger.py            # Utility: logging
-└── formatters.py        # Utility: data filtering
+└── send_to_user.py      # CLI: send message to user (creates chat if needed)
 ```
 
 ## Available API Methods

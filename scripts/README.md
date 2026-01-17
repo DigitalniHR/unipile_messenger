@@ -10,26 +10,15 @@ source venv/bin/activate
 
 ## 📋 View & Search (Read-only)
 
-### `list_accounts.py`
-List all connected UniPile accounts.
-
-```bash
-python scripts/list_accounts.py
-```
-
-**Output:** Table with Account ID, Provider, Name, Status
-
----
-
 ### `list_chats.py`
 List conversations for an account.
 
 ```bash
-python scripts/list_chats.py --account-id ACCOUNT_ID --limit 20
+python scripts/list_chats.py --limit 20
 ```
 
 **Options:**
-- `--account-id, -a` (required): UniPile account ID
+- `--account-id, -a` (optional): UniPile account ID (default: from .env)
 - `--limit, -l` (default: 20): Max conversations to show
 
 **Output:** Table with Chat ID, Name/Subject, Provider, Unread count
@@ -47,7 +36,7 @@ python scripts/view_thread.py --chat-id CHAT_ID --show-profile
 **Options:**
 - `--chat-id, -c` (required): Chat ID
 - `--show-profile, -p`: Show contact's LinkedIn profile
-- `--account-id, -a`: Account ID (uses first account if not provided)
+- `--account-id, -a` (optional): Account ID (default: from .env)
 
 **Output:** Full conversation with timestamps and sender names
 
@@ -58,12 +47,11 @@ Show messages from last N days across all conversations.
 
 ```bash
 python scripts/recent_messages.py --days 3
-python scripts/recent_messages.py --days 7 --account-id ACCOUNT_ID
 ```
 
 **Options:**
 - `--days, -d` (default: 3): Number of past days
-- `--account-id, -a`: Account ID (uses first account if not provided)
+- `--account-id, -a` (optional): Account ID (default: from .env)
 
 **Output:** Table with Time, Chat, From, Message preview
 
@@ -80,7 +68,7 @@ python scripts/search_linkedin.py "John Doe" --api sales_navigator
 
 **Options:**
 - `keywords` (required): Person name, title, company, etc.
-- `--account-id, -a`: Account ID (uses first account if not provided)
+- `--account-id, -a` (optional): Account ID (default: from .env)
 - `--limit, -l` (default: 10): Max results
 - `--api`: LinkedIn interface (classic, sales_navigator, recruiter)
 
@@ -103,37 +91,10 @@ python scripts/send_to_user.py -u USER_ID -m "Hi" --yes  # skip confirmation
 **Options:**
 - `--user-id, -u` (required): Recipient's provider user ID (from search)
 - `--message, -m` (required): Message text
-- `--account-id, -a`: Account ID (uses first account if not provided)
+- `--account-id, -a` (optional): Account ID (default: from .env)
 - `--yes, -y`: Skip confirmation prompt
 
 **⚠️ IMPORTANT:** Always review message before sending!
-
----
-
-## 🛠️ Utilities (Not CLI scripts)
-
-### `logger.py`
-Logging utilities with timestamped file output.
-
-**Usage in code:**
-```python
-from scripts.logger import setup_logging
-
-logger = setup_logging("my_script")
-logger.info("This is logged")
-```
-
----
-
-### `formatters.py`
-Data filtering functions for token efficiency.
-
-**Usage in code:**
-```python
-from scripts.formatters import filter_account, filter_chat
-
-filtered = filter_account(raw_api_response)
-```
 
 ---
 
@@ -165,13 +126,10 @@ python scripts/send_to_user.py --user-id USER_ID --message "Your reply"
 
 ### 3. Review all conversations
 ```bash
-# Step 1: List accounts
-python scripts/list_accounts.py
+# Step 1: List all chats
+python scripts/list_chats.py --limit 50
 
-# Step 2: List all chats
-python scripts/list_chats.py --account-id ACCOUNT_ID --limit 50
-
-# Step 3: View specific thread
+# Step 2: View specific thread
 python scripts/view_thread.py --chat-id CHAT_ID
 ```
 

@@ -8,9 +8,9 @@
 - [x] Configuration (.env, config.py)
 - [x] Pydantic models for API responses
 - [x] UniPile API client wrapper
-- [x] Interactive Rich UI (main.py)
-- [x] Basic CLI scripts (list_accounts, list_chats, send_message)
+- [x] CLI scripts (list_chats, view_thread, recent_messages, search_linkedin, send_to_user)
 - [x] Documentation (README, CLAUDE.md)
+- [x] Account ID as constant in .env (no need to query)
 
 ### Completed - Phase 2: Core Features
 - [x] Test API connection with real account ✅
@@ -53,23 +53,15 @@
 ### View & Search (Read-only)
 | Script | Purpose | Example |
 |--------|---------|---------|
-| `list_accounts.py` | List connected accounts | `python scripts/list_accounts.py` |
-| `list_chats.py` | List conversations | `python scripts/list_chats.py -a ACCOUNT_ID` |
+| `list_chats.py` | List conversations | `python scripts/list_chats.py` |
 | `view_thread.py` | View conversation with contact details | `python scripts/view_thread.py -c CHAT_ID --show-profile` |
 | `recent_messages.py` | Show messages from last N days | `python scripts/recent_messages.py --days 3` |
-| `search_linkedin.py` | **Search people on LinkedIn** | `python scripts/search_linkedin.py "John Doe"` |
+| `search_linkedin.py` | Search people on LinkedIn | `python scripts/search_linkedin.py "John Doe"` |
 
 ### Messaging (Write - Requires Approval ⚠️)
 | Script | Purpose | Example |
 |--------|---------|---------|
-| `send_message.py` | Send message to chat | `python scripts/send_message.py -c CHAT_ID -m "Hi"` |
-| `send_reply.py` | Send reply with suggestion | `python scripts/send_reply.py -c CHAT_ID` |
-
-### Utilities
-| Script | Purpose |
-|--------|---------|
-| `logger.py` | Logging utilities |
-| `formatters.py` | Data filtering for token efficiency |
+| `send_to_user.py` | Send message to user (creates chat if needed) | `python scripts/send_to_user.py -u USER_ID -m "Hi"` |
 
 ## Architecture Decisions
 
@@ -84,10 +76,11 @@
 - Debugging individual features
 - Each script = single responsibility
 
-### Why Rich + Questionary?
-- Boss prefers terminal UIs over GUIs
-- Arrow key navigation (not number input)
-- Professional-looking output
+### Why Claude Code Orchestration?
+- Boss uses Claude Code to orchestrate all operations
+- Claude Code calls individual scripts as needed
+- No need for interactive UI (main.py removed)
+- Account ID stored in .env as constant
 
 ### Why Human-in-the-Loop for messaging?
 - **CRITICAL**: Boss must approve ALL outgoing messages

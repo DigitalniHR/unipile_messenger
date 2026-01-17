@@ -18,6 +18,7 @@ from rich.table import Table
 from rich import box
 
 from src.unipile_client import UniPileClient, UniPileError
+from src.config import Config
 
 console = Console()
 
@@ -46,7 +47,8 @@ def main():
     )
     parser.add_argument(
         "--account-id", "-a",
-        help="UniPile account ID (if not provided, uses first account)",
+        default=Config.UNIPILE_ACCOUNT_ID,
+        help="UniPile account ID (default: from .env)",
     )
 
     args = parser.parse_args()
@@ -54,14 +56,10 @@ def main():
     try:
         client = UniPileClient()
 
-        # Get account ID if not provided
-        if not args.account_id:
-            accounts = client.list_accounts()
-            if not accounts:
-                console.print("[red]Error: No accounts connected[/red]")
-                return
-            args.account_id = accounts[0].id
-            console.print(f"[dim]Using account: {accounts[0].name}[/dim]\n")
+        # Get account name for display
+        if args.account_id == Config.UNIPILE_ACCOUNT_ID:
+            account = client.get_account(args.account_id)
+            console.print(f"[dim]Using account: {account.name}[/dim]\n")
 
         # Calculate cutoff time
         cutoff = datetime.now(timezone.utc) - timedelta(days=args.days)

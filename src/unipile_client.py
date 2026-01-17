@@ -124,11 +124,18 @@ class UniPileClient:
         accounts = []
         for item in items:
             try:
+                # Extract LinkedIn provider_id from connection_params.im.id
+                provider_id = None
+                connection_params = item.get("connection_params", {})
+                if isinstance(connection_params, dict) and "im" in connection_params:
+                    provider_id = connection_params["im"].get("id")
+
                 accounts.append(Account(
                     id=item.get("id", ""),
                     provider=item.get("type", item.get("provider", "LINKEDIN")),
                     name=item.get("name"),
                     identifier=item.get("identifier"),
+                    provider_id=provider_id,
                     status=item.get("connection_params", {}).get("status", "OK")
                     if isinstance(item.get("connection_params"), dict) else "OK",
                 ))
@@ -140,11 +147,19 @@ class UniPileClient:
     def get_account(self, account_id: str) -> Account:
         """Get single account by ID."""
         data = self._request("GET", f"/accounts/{account_id}")
+
+        # Extract LinkedIn provider_id from connection_params.im.id
+        provider_id = None
+        connection_params = data.get("connection_params", {})
+        if isinstance(connection_params, dict) and "im" in connection_params:
+            provider_id = connection_params["im"].get("id")
+
         return Account(
             id=data.get("id", account_id),
             provider=data.get("type", data.get("provider", "LINKEDIN")),
             name=data.get("name"),
             identifier=data.get("identifier"),
+            provider_id=provider_id,
             status=data.get("connection_params", {}).get("status", "OK")
             if isinstance(data.get("connection_params"), dict) else "OK",
         )
@@ -437,3 +452,86 @@ class UniPileClient:
 
         data = self._request("GET", f"/users/{account_id}/relations", params=params)
         return data.get("items", []), data.get("cursor")
+
+    # ==================== POSTS & COMMENTS ====================
+
+    def list_user_posts(
+        self,
+        identifier: str,
+        account_id: str,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+    ) -> tuple[List[Dict[str, Any]], Optional[str]]:
+        """
+        List posts from a user or company.
+
+        Args:
+            identifier: User ID or company ID (LinkedIn provider ID)
+            account_id: UniPile account ID
+            limit: Max posts to return (1-250)
+            cursor: Pagination cursor
+
+        Returns:
+            Tuple of (list of posts, next cursor or None)
+        """
+        params = {"account_id": account_id, "limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+
+        data = self._request("GET", f"/users/{identifier}/posts", params=params)
+        return data.get("items", []), data.get("cursor")
+
+    def list_post_comments(
+        self,
+        post_id: str,
+        account_id: str,
+        limit: int = 100,
+        cursor: Optional[str] = None,
+    ) -> tuple[List[Dict[str, Any]], Optional[str]]:
+        """
+        List comments on a post.
+
+        Args:
+            post_id: Post ID (use social_id for reliability)
+            account_id: UniPile account ID
+            limit: Max comments to return (1-250)
+            cursor: Pagination cursor
+
+        Returns:
+            Tuple of (list of comments, next cursor or None)
+        """
+        params = {"account_id": account_id, "limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+
+        data = self._request("GET", f"/posts/{post_id}/comments", params=params)
+        return data.get("items", []), data.get("cursor")
+
+    def send_comment(
+        self,
+        post_id: str,
+        account_id: str,
+        text: str,
+        parent_comment_id: Optional[str] = None,
+    ) -> str:
+        """
+        Send a comment or reply to a post.
+
+        Args:
+            post_id: Post ID (use social_id)
+            account_id: UniPile account ID
+            text: Comment text
+            parent_comment_id: If replying to a comment, its ID
+
+        Returns:
+            Created comment ID
+        """
+        payload = {
+            "account_id": account_id,
+            "text": text,
+        }
+        if parent_comment_id:
+            payload["parent_comment_id"] = parent_comment_id
+
+        data = self._request("POST", f"/posts/{post_id}/comments", json=payload)
+        return data.get("comment_id", "")

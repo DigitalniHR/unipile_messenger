@@ -3,7 +3,7 @@
 List chats/conversations for an account.
 
 Usage:
-    python scripts/list_chats.py --account-id ACCOUNT_ID [--limit 20]
+    python scripts/list_chats.py [--account-id ACCOUNT_ID] [--limit 20]
 """
 import sys
 import argparse
@@ -17,6 +17,7 @@ from rich.table import Table
 from rich import box
 
 from src.unipile_client import UniPileClient, UniPileError
+from src.config import Config
 
 console = Console()
 
@@ -25,8 +26,8 @@ def main():
     parser = argparse.ArgumentParser(description="List UniPile chats")
     parser.add_argument(
         "--account-id", "-a",
-        required=True,
-        help="UniPile account ID",
+        default=Config.UNIPILE_ACCOUNT_ID,
+        help="UniPile account ID (default: from .env)",
     )
     parser.add_argument(
         "--limit", "-l",

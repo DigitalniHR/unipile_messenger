@@ -13,6 +13,7 @@ class Account(BaseModel):
     provider: str = Field(default="LINKEDIN")
     name: Optional[str] = None
     identifier: Optional[str] = None  # email or username
+    provider_id: Optional[str] = None  # LinkedIn native user ID (for posts/feed endpoints)
     status: str = "OK"  # OK, CREDENTIALS_REQUIRED, etc.
     created_at: Optional[datetime] = None
 
@@ -72,6 +73,72 @@ class Connection(BaseModel):
     headline: Optional[str] = None
     profile_url: Optional[str] = None
     profile_picture_url: Optional[str] = None
+
+
+class PostAuthor(BaseModel):
+    """Author info for a post."""
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    headline: Optional[str] = None
+    profile_url: Optional[str] = None
+
+
+class Post(BaseModel):
+    """LinkedIn post from UniPile API."""
+
+    id: str  # UniPile's internal ID
+    social_id: str  # LinkedIn's native post ID (use this for actions!)
+    account_id: str
+    author: Optional[PostAuthor] = None
+    text: Optional[str] = None
+    timestamp: Optional[datetime] = None
+
+    # Engagement stats
+    like_count: int = 0
+    comment_count: int = 0
+    share_count: int = 0
+    view_count: int = 0
+
+    # Post metadata
+    post_url: Optional[str] = None
+    is_shared: bool = False  # Is this a repost?
+
+    class Config:
+        populate_by_name = True
+
+
+class CommentAuthor(BaseModel):
+    """Author info for a comment."""
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    headline: Optional[str] = None
+    profile_url: Optional[str] = None
+
+
+class Comment(BaseModel):
+    """Comment on a LinkedIn post."""
+
+    id: str
+    post_id: str
+    social_id: Optional[str] = None  # LinkedIn's native comment ID
+    author: Optional[CommentAuthor] = None
+    text: Optional[str] = None
+    timestamp: Optional[datetime] = None
+
+    # Threading
+    parent_comment_id: Optional[str] = None  # None = top-level comment
+
+    # Engagement
+    like_count: int = 0
+    reply_count: int = 0
+
+    # Metadata
+    is_from_account: bool = False  # Is this comment from your account?
+
+    class Config:
+        populate_by_name = True
 
 
 class APIResponse(BaseModel):
