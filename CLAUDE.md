@@ -41,80 +41,57 @@ python scripts/search_linkedin.py "Product Manager Prague" --limit 20
 python scripts/send_to_user.py --user-id USER_ID --message "Your message"
 ```
 
-### Comment Engagement (AI-Powered)
+### Comment Engagement (AI-Orchestrated)
 
-**Respond to Unanswered Post Comments:**
-```bash
-# Preview mode (safe, no sending)
-python scripts/respond_to_comments.py --posts 3 --dry-run
+**NEW: AI orchestrates the entire workflow** - Python scripts are simple, atomic tools.
 
-# Interactive mode (EVERY response requires your approval)
-python scripts/respond_to_comments.py --posts 3
+**Usage:**
+1. When you want to respond to LinkedIn comments, just say: "zkontroluj linkedin commenty" or "odpověz na komentáře"
+2. I will automatically:
+   - Fetch unanswered comments (default: last 3 posts)
+   - Show you summary
+   - Present comments ONE BY ONE with AI-generated responses
+   - Wait for your approval for each one
 
-# Process more posts
-python scripts/respond_to_comments.py --posts 10
-```
+**Default behavior:**
+- Checks last 3 posts (you can specify: "zkontroluj posledních 5 postů")
+- Shows comment + AI response
+- You respond: "pošli" (send), "skip", or write your own text
+- Continues until all comments are processed
 
-**✅ Setup Complete** - Anthropic API key and model already configured in `.env`
+**Why this works better:**
+- Full AI control over the conversation flow
+- Natural approval process (no scripts blocking for input)
+- Flexible - you can edit responses on the fly
+- Rate limiting handled automatically (1s between sends)
 
-**Approval-First Workflow** (All responses require explicit approval):
-1. Always run with `--dry-run` first to preview responses:
-   ```bash
-   python scripts/respond_to_comments.py --posts 3 --dry-run
-   ```
-2. Review AI-generated responses on screen
-3. Then run interactive mode - **you will be asked to approve EACH response**:
-   ```bash
-   python scripts/respond_to_comments.py --posts 3
-   ```
-4. For each response, type `yes`, `send`, or `ok` to send it
-5. Type anything else (e.g. `skip`, `no`, or just Enter) to skip
-
-**Workflow:**
-1. Fetches your N most recent LinkedIn posts
-2. Downloads all comments (with pagination)
-3. Filters out:
-   - Your own comments
-   - Comments you already replied to
-4. For each unanswered top-level comment:
-   - **Builds conversation thread**: Collects all previous comments from this specific person (for context)
-   - Shows comment preview
-   - Generates personalized AI response using Claude with:
-     - The original post content
-     - The comment being responded to
-     - **Full conversation history with this commenter** ← *New Feature*
-   - Presents response for approval
-   - Sends if approved (with rate limiting)
-5. Displays summary (sent/skipped counts)
-
-**Why Conversation Context Matters:**
-The AI now understands each commenter's communication style, previous points, and interests from the same post. This makes responses more **relevant, personalized, and natural** rather than generic.
-
-**Options:**
-- `--posts N` - Number of recent posts to process (default: 3)
-- `--dry-run` - Preview responses without sending (SAFE MODE)
-- `--account-id ID` - Override .env account ID (default: from .env)
+**Technical Details** (for reference):
+- `list_unanswered_comments.py` - Returns JSON with unanswered comments
+- `generate_comment_response.py` - Generates AI response for one comment
+- `send_comment.py` - Sends one approved comment to LinkedIn
 
 ## Project Structure
 
 ```
 unipile-messenger/
 ├── src/
-│   ├── unipile_client.py      # Core API client (messaging + posts + comments)
-│   ├── config.py              # Environment config (.env loader)
-│   ├── models.py              # Pydantic models (Account, Chat, Post, Comment, etc.)
-│   └── ai_responder.py        # Claude AI response generator (for comment engagement)
+│   ├── unipile_client.py              # Core API client (messaging + posts + comments)
+│   ├── config.py                      # Environment config (.env loader)
+│   ├── models.py                      # Pydantic models (Account, Chat, Post, Comment, etc.)
+│   └── ai_responder.py                # Claude AI response generator (for comment engagement)
 ├── scripts/
-│   ├── list_chats.py          # CLI: list conversations
-│   ├── view_thread.py         # CLI: view full conversation
-│   ├── recent_messages.py     # CLI: show recent messages
-│   ├── search_linkedin.py     # CLI: search people on LinkedIn
-│   ├── send_to_user.py        # CLI: send message to user (creates chat)
-│   └── respond_to_comments.py # CLI: AI-powered comment responses (NEW)
+│   ├── list_chats.py                  # CLI: list conversations
+│   ├── view_thread.py                 # CLI: view full conversation
+│   ├── recent_messages.py             # CLI: show recent messages
+│   ├── search_linkedin.py             # CLI: search people on LinkedIn
+│   ├── send_to_user.py                # CLI: send message to user (creates chat)
+│   ├── list_unanswered_comments.py    # CLI: fetch unanswered comments (JSON)
+│   ├── generate_comment_response.py   # CLI: generate AI response for one comment
+│   └── send_comment.py                # CLI: send one approved comment
 ├── prompts/
-│   └── comment_response.md    # System prompt for Claude (engagement guidelines)
-├── .env                       # API credentials + account IDs
-└── requirements.txt           # Python dependencies (includes anthropic)
+│   └── comment_response.md            # System prompt for Claude (engagement guidelines)
+├── .env                               # API credentials + account IDs
+└── requirements.txt                   # Python dependencies (includes anthropic)
 ```
 
 ## Workflow
@@ -181,16 +158,10 @@ unipile-messenger/
 ✅ CORRECT: Show draft → wait for "yes send it" → then send
 
 **Sending Comment Responses:**
-1. NEVER run `respond_to_comments.py` without `--dry-run` first
-2. Run with `--dry-run` flag first: `python scripts/respond_to_comments.py --posts 3 --dry-run`
-3. Review the AI-generated responses on screen
-4. For production, run without `--dry-run` for interactive approval mode
-5. **EVERY response MUST be approved** - type "yes"/"send" or "ok" before it's sent
-6. Type anything else to skip a response (no auto-sending ever)
-
-**Example workflow:**
-❌ WRONG: Automatic responses without approval
-✅ CORRECT: Run with `--dry-run` → review → run normally → approve EACH response
+- I will orchestrate the entire workflow
+- You will see each comment + AI response ONE BY ONE
+- You approve each response individually ("pošli", "skip", or custom text)
+- NO auto-sending - every response requires explicit approval
 
 **Other operations requiring approval:**
 - Starting new conversations
